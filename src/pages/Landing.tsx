@@ -1,10 +1,15 @@
-
 import { useState } from 'react';
 import { Bug, Menu, X, Star, Github, Linkedin, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Landing = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/app');
+  };
 
   const features = [
     {
@@ -156,7 +161,10 @@ const Landing = () => {
               This Application will be helpful for the Software Developers to evaluate, monitored and prioritized the Bugs during Development and Software Testing.
             </p>
             <div className="mt-8">
-              <button className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors">
+              <button 
+                onClick={handleGetStarted}
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors"
+              >
                 Get Started
               </button>
             </div>
