@@ -1,79 +1,23 @@
 
 import { useState, useEffect } from 'react';
-import { Bug, FilterOptions, User } from '@/types';
-import { AuthModal } from '@/components/AuthModal';
+import { Bug, User, FilterOptions } from '@/types';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
 import { BugList } from '@/components/BugList';
 import { BugReport } from '@/components/BugReport';
 import { FilterPanel } from '@/components/FilterPanel';
+import { AuthModal } from '@/components/AuthModal';
+import { BugHistory } from '@/components/BugHistory';
 import { BugTracker } from '@/components/BugTracker';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { mockBugs, mockUsers } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
 
-// Mock data for demonstration
-const mockBugs: Bug[] = [
-  {
-    id: '1',
-    title: 'Login button not responsive on mobile',
-    description: 'Users are unable to tap the login button in the mobile view on iPhone 13. This only occurs in Safari.',
-    severity: 'high',
-    status: 'open',
-    assignedTo: 'john.doe@example.com',
-    reportedBy: 'jane.smith@example.com',
-    tags: ['UI', 'Mobile', 'Safari'],
-    stepsToReproduce: '1. Open app on iPhone 13\n2. Navigate to login page\n3. Try to tap login button\n4. Button does not respond',
-    expectedBehavior: 'Login button should be clickable and responsive',
-    actualBehavior: 'Button appears but does not respond to touch',
-    environment: 'iOS 15.1, Safari, iPhone 13',
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-01-15T10:30:00Z',
-    dueDate: '2024-01-20T23:59:59Z',
-    priority: 'high'
-  },
-  {
-    id: '2',
-    title: 'Database connection timeout',
-    description: 'Random database connection timeouts occurring during peak hours',
-    severity: 'critical',
-    status: 'in-progress',
-    assignedTo: 'mike.wilson@example.com',
-    reportedBy: 'admin@example.com',
-    tags: ['Database', 'Performance', 'Backend'],
-    stepsToReproduce: 'Occurs randomly during high traffic periods',
-    expectedBehavior: 'Database should maintain stable connections',
-    actualBehavior: 'Connections timeout randomly causing 500 errors',
-    environment: 'Production server, PostgreSQL 13',
-    createdAt: '2024-01-14T08:15:00Z',
-    updatedAt: '2024-01-16T14:22:00Z',
-    dueDate: '2024-01-18T17:00:00Z',
-    priority: 'urgent'
-  },
-  {
-    id: '3',
-    title: 'Email notifications not being sent',
-    description: 'Users are not receiving email notifications for password resets',
-    severity: 'medium',
-    status: 'resolved',
-    assignedTo: 'sarah.jones@example.com',
-    reportedBy: 'support@example.com',
-    tags: ['Email', 'Authentication', 'Backend'],
-    stepsToReproduce: '1. Request password reset\n2. Check email\n3. No email received',
-    expectedBehavior: 'Password reset email should be delivered within 5 minutes',
-    actualBehavior: 'No email is sent',
-    environment: 'Production, SendGrid email service',
-    createdAt: '2024-01-10T12:00:00Z',
-    updatedAt: '2024-01-15T16:45:00Z',
-    priority: 'medium'
-  }
-];
-
 const Index = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [bugs, setBugs] = useState<Bug[]>(mockBugs);
-  const [filteredBugs, setFilteredBugs] = useState<Bug[]>(mockBugs);
-  const [filters, setFilters] = useState<FilterOptions>({
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [activeView, setActiveView] = useState<'dashboard' | 'bugs' | 'report' | 'history'>('dashboard');
+  const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
     status: 'all',
     severity: 'all',
     assignedTo: 'all',
@@ -81,108 +25,51 @@ const Index = () => {
     sortBy: 'created',
     sortOrder: 'desc'
   });
-  const [activeView, setActiveView] = useState<'dashboard' | 'bugs' | 'report'>('dashboard');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(true);
   const { toast } = useToast();
 
-  // Apply filters and sorting
-  useEffect(() => {
-    let filtered = [...bugs];
-
-    // Apply filters
-    if (filters.status !== 'all') {
-      filtered = filtered.filter(bug => bug.status === filters.status);
-    }
-    if (filters.severity !== 'all') {
-      filtered = filtered.filter(bug => bug.severity === filters.severity);
-    }
-    if (filters.assignedTo !== 'all') {
-      filtered = filtered.filter(bug => bug.assignedTo === filters.assignedTo);
-    }
-    if (filters.priority !== 'all') {
-      filtered = filtered.filter(bug => bug.priority === filters.priority);
-    }
-
-    // Apply sorting
-    filtered.sort((a, b) => {
-      let aValue: any, bValue: any;
-      
-      switch (filters.sortBy) {
-        case 'title':
-          aValue = a.title.toLowerCase();
-          bValue = b.title.toLowerCase();
-          break;
-        case 'severity':
-          const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-          aValue = severityOrder[a.severity as keyof typeof severityOrder];
-          bValue = severityOrder[b.severity as keyof typeof severityOrder];
-          break;
-        case 'status':
-          const statusOrder = { open: 1, 'in-progress': 2, resolved: 3, closed: 4 };
-          aValue = statusOrder[a.status as keyof typeof statusOrder];
-          bValue = statusOrder[b.status as keyof typeof statusOrder];
-          break;
-        case 'priority':
-          const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
-          aValue = priorityOrder[(a.priority || 'low') as keyof typeof priorityOrder];
-          bValue = priorityOrder[(b.priority || 'low') as keyof typeof priorityOrder];
-          break;
-        case 'updated':
-          aValue = new Date(a.updatedAt);
-          bValue = new Date(b.updatedAt);
-          break;
-        default: // 'created'
-          aValue = new Date(a.createdAt);
-          bValue = new Date(b.createdAt);
-      }
-
-      if (filters.sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-      }
-    });
-
-    setFilteredBugs(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
-  }, [bugs, filters]);
+  const bugsPerPage = 10;
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
-    setIsAuthenticated(true);
+    setShowAuthModal(false);
     toast({
       title: "Login Successful",
-      description: `Welcome back, ${user.name}!`,
+      description: `Welcome ${user.name}!`,
     });
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
-    setIsAuthenticated(false);
-    setActiveView('dashboard');
+    setShowAuthModal(true);
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out.",
     });
   };
 
-  const handleCreateBug = (bugData: Omit<Bug, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newBug: Bug = {
-      ...bugData,
+  const handleToggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  const handleAddBug = (newBug: Omit<Bug, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const bug: Bug = {
+      ...newBug,
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      reportedBy: currentUser?.id || 'unknown'
     };
-    setBugs(prev => [newBug, ...prev]);
+    setBugs(prev => [bug, ...prev]);
+    setActiveView('bugs');
     toast({
       title: "Bug Created",
       description: "Bug report has been successfully created.",
     });
   };
 
-  const handleUpdateBug = (updatedBug: Bug) => {
+  const handleEditBug = (updatedBug: Bug) => {
     setBugs(prev => prev.map(bug => 
       bug.id === updatedBug.id 
         ? { ...updatedBug, updatedAt: new Date().toISOString() }
@@ -202,92 +89,149 @@ const Index = () => {
     });
   };
 
-  const handleSidebarViewChange = (view: 'all' | 'my-bugs' | 'assigned') => {
-    if (view === 'all') setActiveView('bugs');
-    else if (view === 'my-bugs') setActiveView('bugs');
-    else if (view === 'assigned') setActiveView('bugs');
-  };
+  // Filter bugs based on current filters
+  const filteredBugs = bugs.filter(bug => {
+    if (currentFilters.status !== 'all' && bug.status !== currentFilters.status) return false;
+    if (currentFilters.severity !== 'all' && bug.severity !== currentFilters.severity) return false;
+    if (currentFilters.assignedTo !== 'all' && bug.assignedTo !== currentFilters.assignedTo) return false;
+    if (currentFilters.priority !== 'all' && bug.priority !== currentFilters.priority) return false;
+    return true;
+  });
 
-  // Pagination
-  const totalPages = Math.ceil(filteredBugs.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedBugs = filteredBugs.slice(startIndex, startIndex + itemsPerPage);
+  // Sort bugs
+  const sortedBugs = [...filteredBugs].sort((a, b) => {
+    const { sortBy, sortOrder } = currentFilters;
+    let aValue: any, bValue: any;
 
-  if (!isAuthenticated || !currentUser) {
+    switch (sortBy) {
+      case 'created':
+        aValue = new Date(a.createdAt);
+        bValue = new Date(b.createdAt);
+        break;
+      case 'updated':
+        aValue = new Date(a.updatedAt);
+        bValue = new Date(b.updatedAt);
+        break;
+      case 'severity':
+        const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+        aValue = severityOrder[a.severity];
+        bValue = severityOrder[b.severity];
+        break;
+      case 'priority':
+        const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+        aValue = priorityOrder[a.priority || 'low'];
+        bValue = priorityOrder[b.priority || 'low'];
+        break;
+      case 'status':
+        const statusOrder = { open: 1, 'in-progress': 2, resolved: 3, closed: 4 };
+        aValue = statusOrder[a.status];
+        bValue = statusOrder[b.status];
+        break;
+      case 'title':
+        aValue = a.title.toLowerCase();
+        bValue = b.title.toLowerCase();
+        break;
+      default:
+        return 0;
+    }
+
+    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  // Paginate bugs
+  const totalPages = Math.ceil(sortedBugs.length / bugsPerPage);
+  const paginatedBugs = sortedBugs.slice(
+    (currentPage - 1) * bugsPerPage,
+    currentPage * bugsPerPage
+  );
+
+  if (!currentUser) {
     return <AuthModal onLogin={handleLogin} />;
   }
+
+  const renderContent = () => {
+    switch (activeView) {
+      case 'dashboard':
+        return (
+          <BugTracker 
+            bugs={bugs}
+            currentUser={currentUser}
+            onEditBug={handleEditBug}
+            onDeleteBug={handleDeleteBug}
+          />
+        );
+      case 'bugs':
+        return (
+          <div className="space-y-6">
+            <FilterPanel 
+              currentFilters={currentFilters}
+              onFilterChange={setCurrentFilters}
+            />
+            <BugList 
+              bugs={paginatedBugs}
+              onEdit={handleEditBug}
+              onDelete={handleDeleteBug}
+              currentUser={currentUser}
+            />
+            {totalPages > 1 && (
+              <div className="flex justify-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-2">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      case 'report':
+        return (
+          <BugReport 
+            onSubmit={handleAddBug}
+            users={mockUsers}
+          />
+        );
+      case 'history':
+        return <BugHistory bugs={bugs} currentUser={currentUser} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
-        user={currentUser} 
-        onLogout={handleLogout}
-        onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        user={currentUser}
+        onToggleSidebar={handleToggleSidebar}
         sidebarCollapsed={sidebarCollapsed}
+        onLogout={handleLogout}
       />
       
       <div className="flex">
         <Sidebar 
-          activeView={activeView === 'bugs' ? 'all' : activeView === 'dashboard' ? 'all' : 'all'}
-          onViewChange={handleSidebarViewChange}
+          collapsed={sidebarCollapsed}
+          activeView={activeView}
+          onViewChange={setActiveView}
         />
         
-        <main className="flex-1 p-8">
-          <div className="max-w-7xl mx-auto">
-            <Tabs value={activeView} onValueChange={(value) => setActiveView(value as any)}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="bugs">Bug List</TabsTrigger>
-                <TabsTrigger value="report">Report Bug</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="dashboard" className="space-y-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Bug Tracker Dashboard</h1>
-                  <p className="text-gray-600">Monitor and track all bugs in your system</p>
-                </div>
-                <BugTracker bugs={bugs} />
-              </TabsContent>
-
-              <TabsContent value="bugs" className="space-y-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Bug Management</h1>
-                  <p className="text-gray-600">View and manage all reported bugs</p>
-                </div>
-                
-                <FilterPanel 
-                  bugs={bugs}
-                  currentFilters={filters}
-                  onFilterChange={setFilters}
-                />
-                
-                <BugList 
-                  bugs={paginatedBugs}
-                  onEdit={handleUpdateBug}
-                  onDelete={handleDeleteBug}
-                  currentUser={currentUser}
-                  totalBugs={filteredBugs.length}
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </TabsContent>
-
-              <TabsContent value="report" className="space-y-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Report New Bug</h1>
-                  <p className="text-gray-600">Create a detailed bug report</p>
-                </div>
-                
-                <BugReport 
-                  onSubmit={handleCreateBug}
-                  currentUser={currentUser}
-                  users={[currentUser]}
-                  onClose={() => setActiveView('dashboard')}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
+        <main className={`flex-1 p-6 transition-all duration-300 ${
+          sidebarCollapsed ? 'ml-16' : 'ml-64'
+        }`}>
+          {renderContent()}
         </main>
       </div>
     </div>

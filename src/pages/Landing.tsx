@@ -1,14 +1,60 @@
 import { useState } from 'react';
-import { Bug, Menu, X, Star, Github, Linkedin, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { Bug, Menu, X, Star, Github, Linkedin, Mail, Phone, MapPin, ArrowRight, Instagram, Facebook } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
+import { useToast } from '@/hooks/use-toast';
 
 const Landing = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleGetStarted = () => {
     navigate('/app');
+  };
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const result = await emailjs.send(
+        'service_lkpfc1r', // Service ID
+        'template_g7e2cqt', // Template ID
+        {
+          from_name: contactForm.name,
+          from_email: contactForm.email,
+          message: contactForm.message,
+        },
+        'zZavmPQ9nkOTMMGGy' // Public Key
+      );
+
+      if (result.status === 200) {
+        toast({
+          title: "Message Sent",
+          description: "Thank you for your message! We'll get back to you soon.",
+        });
+        setContactForm({ name: '', email: '', message: '' });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again later.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleContactInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setContactForm(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
   };
 
   const features = [
@@ -100,6 +146,7 @@ const Landing = () => {
               <a href="#outcomes" className="text-gray-700 hover:text-blue-600 transition-colors">Project Outcomes</a>
               <a href="#developer" className="text-gray-700 hover:text-blue-600 transition-colors">Developer</a>
               <a href="#references" className="text-gray-700 hover:text-blue-600 transition-colors">References</a>
+              <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">Contact</a>
             </nav>
 
             {/* Icons */}
@@ -144,6 +191,7 @@ const Landing = () => {
                 <a href="#outcomes" className="px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors">Project Outcomes</a>
                 <a href="#developer" className="px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors">Developer</a>
                 <a href="#references" className="px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors">References</a>
+                <a href="#contact" className="px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors">Contact</a>
               </div>
             </div>
           )}
@@ -248,7 +296,7 @@ const Landing = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Sandipan Naskar</h3>
               <p className="text-gray-600 mb-2">Web Developer</p>
               <p className="text-gray-600 mb-2">B.Tech In Computer Science And Engineering</p>
-              <p className="text-gray-600 mb-4">Passionate Software Developer</p>
+              <p className="text-gray-600 mb-4">Computer Science Student</p>
               <div className="flex justify-center space-x-4">
                 <a 
                   href="https://github.com/Sandipan-Naskar" 
@@ -259,7 +307,7 @@ const Landing = () => {
                   <Github className="w-6 h-6" />
                 </a>
                 <a 
-                  href="https://www.linkedin.com/in/sandipan-naskar/" 
+                  href="https://www.linkedin.com/in/sandipan-naskar/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-700 transition-colors"
@@ -314,6 +362,118 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Contact Section */}
+      <section id="contact" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">
+            <span className="text-blue-600">Contact Us</span>
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Get in Touch</h3>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <Phone className="w-5 h-5 text-blue-600" />
+                  <span className="text-gray-700">+91-6290410080</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Mail className="w-5 h-5 text-blue-600" />
+                  <span className="text-gray-700">sandipannaskar74@gmail.com</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MapPin className="w-5 h-5 text-blue-600" />
+                  <span className="text-gray-700">Kolkata, West Bengal</span>
+                </div>
+              </div>
+              <div className="mt-8">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Follow Us</h4>
+                <div className="flex space-x-4">
+                  <a 
+                    href="https://www.instagram.com/sandipan.naskar__?igsh=enl4bXlydmxpMHhs"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    <Instagram className="w-6 h-6" />
+                  </a>
+                  <a 
+                    href="https://www.facebook.com/share/1GEcG2Ruu5/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    <Facebook className="w-6 h-6" />
+                  </a>
+                  <a 
+                    href="https://www.linkedin.com/in/sandipan-naskar/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    <Linkedin className="w-6 h-6" />
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div>
+              <form onSubmit={handleContactSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={contactForm.name}
+                    onChange={handleContactInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Your Name"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={contactForm.email}
+                    onChange={handleContactInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    value={contactForm.message}
+                    onChange={handleContactInputChange}
+                    required
+                    rows={5}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Your message here..."
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Send Message
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -324,17 +484,28 @@ const Landing = () => {
                 <span className="text-xl font-bold">Bug Tracker</span>
               </div>
               <div className="flex space-x-4">
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
-                  </svg>
+                <a 
+                  href="https://www.instagram.com/sandipan.naskar__?igsh=enl4bXlydmxpMHhs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <Instagram className="w-6 h-6" />
                 </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
-                  </svg>
+                <a 
+                  href="https://www.facebook.com/share/1GEcG2Ruu5/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <Facebook className="w-6 h-6" />
                 </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a 
+                  href="https://www.linkedin.com/in/sandipan-naskar/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   <Linkedin className="w-6 h-6" />
                 </a>
               </div>
@@ -343,17 +514,17 @@ const Landing = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
               <div className="space-y-2">
-                <a href="#" className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
+                <a href="tel:+916290410080" className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
                   <Phone className="w-4 h-4" />
-                  <span>+1 (555) 123-4567</span>
+                  <span>+91-6290410080</span>
                 </a>
-                <a href="#" className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
+                <a href="mailto:sandipannaskar74@gmail.com" className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
                   <Mail className="w-4 h-4" />
-                  <span>contact@bugtracker.com</span>
+                  <span>sandipannaskar74@gmail.com</span>
                 </a>
                 <a href="#" className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
                   <MapPin className="w-4 h-4" />
-                  <span>San Francisco, CA 94105</span>
+                  <span>Kolkata, West Bengal</span>
                 </a>
               </div>
             </div>
