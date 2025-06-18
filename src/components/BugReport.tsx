@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { Bug, User } from '@/types';
@@ -37,7 +36,7 @@ export const BugReport = ({ users, currentUser, editingBug, onSubmit, onClose }:
         description: editingBug.description,
         severity: editingBug.severity,
         status: editingBug.status,
-        assignedTo: editingBug.assignedTo || '',
+        assignedTo: typeof editingBug.assignedTo === 'string' ? editingBug.assignedTo : editingBug.assignedTo?.id || '',
         stepsToReproduce: editingBug.stepsToReproduce || '',
         expectedBehavior: editingBug.expectedBehavior || '',
         actualBehavior: editingBug.actualBehavior || '',
@@ -46,6 +45,22 @@ export const BugReport = ({ users, currentUser, editingBug, onSubmit, onClose }:
         dueDate: editingBug.dueDate ? editingBug.dueDate.split('T')[0] : ''
       });
       setTags(editingBug.tags || []);
+    } else {
+      // Reset form for new bug
+      setFormData({
+        title: '',
+        description: '',
+        severity: 'medium',
+        status: 'open',
+        assignedTo: '',
+        stepsToReproduce: '',
+        expectedBehavior: '',
+        actualBehavior: '',
+        environment: '',
+        priority: 'medium',
+        dueDate: ''
+      });
+      setTags([]);
     }
   }, [editingBug]);
 

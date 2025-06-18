@@ -17,6 +17,7 @@ const Index = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeView, setActiveView] = useState<'dashboard' | 'bugs' | 'report' | 'history'>('dashboard');
   const [currentView, setCurrentView] = useState<'all' | 'my-bugs' | 'assigned'>('all');
+  const [editingBug, setEditingBug] = useState<Bug | null>(null);
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
     status: 'all',
     severity: 'all',
@@ -53,32 +54,45 @@ const Index = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  const handleAddBug = (newBug: Omit<Bug, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const bug: Bug = {
-      ...newBug,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      reportedBy: currentUser?.id || 'unknown'
-    };
-    setBugs(prev => [bug, ...prev]);
-    setActiveView('bugs');
-    toast({
-      title: "Bug Created",
-      description: "Bug report has been successfully created.",
-    });
+  const handleAddBug = (newBugData: Partial<Bug>) => {
+    if (editingBug) {
+      // Update existing bug
+      const updatedBug: Bug = {
+        ...editingBug,
+        ...newBugData,
+        updatedAt: new Date().toISOString(),
+        reportedBy: editingBug.reportedBy // Keep original reporter
+      };
+      setBugs(prev => prev.map(bug => 
+        bug.id === editingBug.id ? updatedBug : bug
+      ));
+      setEditingBug(null);
+      setActiveView('dashboard');
+      toast({
+        title: "Bug Updated",
+        description: "Bug has been successfully updated.",
+      });
+    } else {
+      // Create new bug
+      const bug: Bug = {
+        ...newBugData,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        reportedBy: currentUser?.id || 'unknown'
+      } as Bug;
+      setBugs(prev => [bug, ...prev]);
+      setActiveView('dashboard');
+      toast({
+        title: "Bug Created",
+        description: "Bug report has been successfully created.",
+      });
+    }
   };
 
-  const handleEditBug = (updatedBug: Bug) => {
-    setBugs(prev => prev.map(bug => 
-      bug.id === updatedBug.id 
-        ? { ...updatedBug, updatedAt: new Date().toISOString() }
-        : bug
-    ));
-    toast({
-      title: "Bug Updated",
-      description: "Bug has been successfully updated.",
-    });
+  const handleEditBug = (bug: Bug) => {
+    setEditingBug(bug);
+    setActiveView('report');
   };
 
   const handleDeleteBug = (bugId: string) => {
@@ -87,6 +101,11 @@ const Index = () => {
       title: "Bug Deleted",
       description: "Bug has been successfully deleted.",
     });
+  };
+
+  const handleCloseReport = () => {
+    setEditingBug(null);
+    setActiveView(editingBug ? 'dashboard' : 'bugs');
   };
 
   // Filter bugs based on current filters and view
@@ -158,6 +177,7 @@ const Index = () => {
   };
 
   const handleNewBug = () => {
+    setEditingBug(null);
     setActiveView('report');
   };
 
@@ -218,7 +238,8 @@ const Index = () => {
             onSubmit={handleAddBug}
             users={mockUsers}
             currentUser={currentUser}
-            onClose={() => setActiveView('bugs')}
+            editingBug={editingBug}
+            onClose={handleCloseReport}
           />
         );
       case 'history':
