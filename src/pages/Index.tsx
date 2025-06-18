@@ -1,240 +1,283 @@
 
 import { useState, useEffect } from 'react';
-import { BugReport } from '@/components/BugReport';
-import { BugList } from '@/components/BugList';
+import { Bug, FilterOptions, User } from '@/types';
 import { AuthModal } from '@/components/AuthModal';
-import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
+import { Sidebar } from '@/components/Sidebar';
+import { BugList } from '@/components/BugList';
+import { BugReport } from '@/components/BugReport';
 import { FilterPanel } from '@/components/FilterPanel';
-import { NotificationToast } from '@/components/NotificationToast';
-import { Bug, User, FilterOptions } from '@/types';
-import { mockBugs, mockUsers } from '@/data/mockData';
+import { BugTracker } from '@/components/BugTracker';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+
+// Mock data for demonstration
+const mockBugs: Bug[] = [
+  {
+    id: '1',
+    title: 'Login button not responsive on mobile',
+    description: 'Users are unable to tap the login button in the mobile view on iPhone 13. This only occurs in Safari.',
+    severity: 'high',
+    status: 'open',
+    assignedTo: 'john.doe@example.com',
+    reportedBy: 'jane.smith@example.com',
+    tags: ['UI', 'Mobile', 'Safari'],
+    stepsToReproduce: '1. Open app on iPhone 13\n2. Navigate to login page\n3. Try to tap login button\n4. Button does not respond',
+    expectedBehavior: 'Login button should be clickable and responsive',
+    actualBehavior: 'Button appears but does not respond to touch',
+    environment: 'iOS 15.1, Safari, iPhone 13',
+    createdAt: '2024-01-15T10:30:00Z',
+    updatedAt: '2024-01-15T10:30:00Z',
+    dueDate: '2024-01-20T23:59:59Z',
+    priority: 'high'
+  },
+  {
+    id: '2',
+    title: 'Database connection timeout',
+    description: 'Random database connection timeouts occurring during peak hours',
+    severity: 'critical',
+    status: 'in-progress',
+    assignedTo: 'mike.wilson@example.com',
+    reportedBy: 'admin@example.com',
+    tags: ['Database', 'Performance', 'Backend'],
+    stepsToReproduce: 'Occurs randomly during high traffic periods',
+    expectedBehavior: 'Database should maintain stable connections',
+    actualBehavior: 'Connections timeout randomly causing 500 errors',
+    environment: 'Production server, PostgreSQL 13',
+    createdAt: '2024-01-14T08:15:00Z',
+    updatedAt: '2024-01-16T14:22:00Z',
+    dueDate: '2024-01-18T17:00:00Z',
+    priority: 'urgent'
+  },
+  {
+    id: '3',
+    title: 'Email notifications not being sent',
+    description: 'Users are not receiving email notifications for password resets',
+    severity: 'medium',
+    status: 'resolved',
+    assignedTo: 'sarah.jones@example.com',
+    reportedBy: 'support@example.com',
+    tags: ['Email', 'Authentication', 'Backend'],
+    stepsToReproduce: '1. Request password reset\n2. Check email\n3. No email received',
+    expectedBehavior: 'Password reset email should be delivered within 5 minutes',
+    actualBehavior: 'No email is sent',
+    environment: 'Production, SendGrid email service',
+    createdAt: '2024-01-10T12:00:00Z',
+    updatedAt: '2024-01-15T16:45:00Z',
+    priority: 'medium'
+  }
+];
 
 const Index = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [bugs, setBugs] = useState<Bug[]>(mockBugs);
   const [filteredBugs, setFilteredBugs] = useState<Bug[]>(mockBugs);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showBugForm, setShowBugForm] = useState(false);
-  const [editingBug, setEditingBug] = useState<Bug | null>(null);
-  const [currentView, setCurrentView] = useState<'all' | 'my-bugs' | 'assigned'>('all');
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+  const [filters, setFilters] = useState<FilterOptions>({
     status: 'all',
     severity: 'all',
     assignedTo: 'all',
+    priority: 'all',
     sortBy: 'created',
     sortOrder: 'desc'
   });
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [activeView, setActiveView] = useState<'dashboard' | 'bugs' | 'report'>('dashboard');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const { toast } = useToast();
 
+  // Apply filters and sorting
   useEffect(() => {
-    // Simulate user session check
-    const savedUser = localStorage.getItem('bugTracker_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
-
-  useEffect(() => {
-    // Apply filters and sorting
     let filtered = [...bugs];
 
-    // Filter by view
-    if (currentView === 'my-bugs' && user) {
-      filtered = filtered.filter(bug => bug.reportedBy === user.id);
-    } else if (currentView === 'assigned' && user) {
-      filtered = filtered.filter(bug => bug.assignedTo === user.id);
-    }
-
     // Apply filters
-    if (filterOptions.status !== 'all') {
-      filtered = filtered.filter(bug => bug.status === filterOptions.status);
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(bug => bug.status === filters.status);
     }
-    if (filterOptions.severity !== 'all') {
-      filtered = filtered.filter(bug => bug.severity === filterOptions.severity);
+    if (filters.severity !== 'all') {
+      filtered = filtered.filter(bug => bug.severity === filters.severity);
     }
-    if (filterOptions.assignedTo !== 'all') {
-      filtered = filtered.filter(bug => bug.assignedTo === filterOptions.assignedTo);
+    if (filters.assignedTo !== 'all') {
+      filtered = filtered.filter(bug => bug.assignedTo === filters.assignedTo);
     }
-    if (filterOptions.priority && filterOptions.priority !== 'all') {
-      filtered = filtered.filter(bug => bug.priority === filterOptions.priority);
+    if (filters.priority !== 'all') {
+      filtered = filtered.filter(bug => bug.priority === filters.priority);
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
-      let aValue, bValue;
-      switch (filterOptions.sortBy) {
-        case 'severity':
-          const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-          aValue = severityOrder[a.severity];
-          bValue = severityOrder[b.severity];
-          break;
-        case 'priority':
-          const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
-          aValue = priorityOrder[a.priority || 'medium'];
-          bValue = priorityOrder[b.priority || 'medium'];
-          break;
-        case 'status':
-          const statusOrder = { open: 4, 'in-progress': 3, resolved: 2, closed: 1 };
-          aValue = statusOrder[a.status];
-          bValue = statusOrder[b.status];
-          break;
+      let aValue: any, bValue: any;
+      
+      switch (filters.sortBy) {
         case 'title':
           aValue = a.title.toLowerCase();
           bValue = b.title.toLowerCase();
           break;
-        case 'updated':
-          aValue = new Date(a.updatedAt).getTime();
-          bValue = new Date(b.updatedAt).getTime();
+        case 'severity':
+          const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+          aValue = severityOrder[a.severity as keyof typeof severityOrder];
+          bValue = severityOrder[b.severity as keyof typeof severityOrder];
           break;
-        default:
-          aValue = new Date(a.createdAt).getTime();
-          bValue = new Date(b.createdAt).getTime();
+        case 'status':
+          const statusOrder = { open: 1, 'in-progress': 2, resolved: 3, closed: 4 };
+          aValue = statusOrder[a.status as keyof typeof statusOrder];
+          bValue = statusOrder[b.status as keyof typeof statusOrder];
+          break;
+        case 'priority':
+          const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+          aValue = priorityOrder[(a.priority || 'low') as keyof typeof priorityOrder];
+          bValue = priorityOrder[(b.priority || 'low') as keyof typeof priorityOrder];
+          break;
+        case 'updated':
+          aValue = new Date(a.updatedAt);
+          bValue = new Date(b.updatedAt);
+          break;
+        default: // 'created'
+          aValue = new Date(a.createdAt);
+          bValue = new Date(b.createdAt);
       }
-      
-      if (filterOptions.sortBy === 'title') {
-        return filterOptions.sortOrder === 'asc' 
-          ? aValue.localeCompare(bValue) 
-          : bValue.localeCompare(aValue);
+
+      if (filters.sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
-      
-      return filterOptions.sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
     });
 
     setFilteredBugs(filtered);
-  }, [bugs, filterOptions, currentView, user]);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [bugs, filters]);
 
-  const handleLogin = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('bugTracker_user', JSON.stringify(userData));
-    setShowAuthModal(false);
+  const handleLogin = (user: User) => {
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+    toast({
+      title: "Login Successful",
+      description: `Welcome back, ${user.name}!`,
+    });
   };
 
   const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('bugTracker_user');
-    setCurrentView('all');
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    setActiveView('dashboard');
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
   };
 
-  const handleBugSubmit = (bugData: Partial<Bug>) => {
-    if (editingBug) {
-      // Update existing bug
-      const updatedBugs = bugs.map(bug => 
-        bug.id === editingBug.id 
-          ? { ...bug, ...bugData, updatedAt: new Date().toISOString() }
-          : bug
-      );
-      setBugs(updatedBugs);
-    } else {
-      // Create new bug
-      const newBug: Bug = {
-        id: Date.now().toString(),
-        ...bugData as Bug,
-        reportedBy: user!.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setBugs([newBug, ...bugs]);
-    }
-    setShowBugForm(false);
-    setEditingBug(null);
+  const handleCreateBug = (bugData: Omit<Bug, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newBug: Bug = {
+      ...bugData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setBugs(prev => [newBug, ...prev]);
+    toast({
+      title: "Bug Created",
+      description: "Bug report has been successfully created.",
+    });
   };
 
-  const handleBugDelete = (bugId: string) => {
-    setBugs(bugs.filter(bug => bug.id !== bugId));
+  const handleUpdateBug = (updatedBug: Bug) => {
+    setBugs(prev => prev.map(bug => 
+      bug.id === updatedBug.id 
+        ? { ...updatedBug, updatedAt: new Date().toISOString() }
+        : bug
+    ));
+    toast({
+      title: "Bug Updated",
+      description: "Bug has been successfully updated.",
+    });
   };
 
-  const handleBugEdit = (bug: Bug) => {
-    setEditingBug(bug);
-    setShowBugForm(true);
+  const handleDeleteBug = (bugId: string) => {
+    setBugs(prev => prev.filter(bug => bug.id !== bugId));
+    toast({
+      title: "Bug Deleted",
+      description: "Bug has been successfully deleted.",
+    });
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center space-y-8 p-8">
-          <div className="space-y-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-4">
-              <span className="text-2xl">🐛</span>
-            </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Bug Tracker Pro
-            </h1>
-            <p className="text-xl text-slate-600 max-w-md mx-auto">
-              Professional bug tracking with AI-powered insights and team collaboration
-            </p>
-          </div>
-          <button
-            onClick={() => setShowAuthModal(true)}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-          >
-            Get Started
-          </button>
-        </div>
-        
-        {showAuthModal && (
-          <AuthModal
-            onClose={() => setShowAuthModal(false)}
-            onLogin={handleLogin}
-          />
-        )}
-      </div>
-    );
+  // Pagination
+  const totalPages = Math.ceil(filteredBugs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedBugs = filteredBugs.slice(startIndex, startIndex + itemsPerPage);
+
+  if (!isAuthenticated) {
+    return <AuthModal onLogin={handleLogin} />;
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <Sidebar
-        user={user}
-        currentView={currentView}
-        onViewChange={setCurrentView}
-        collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+    <div className="min-h-screen bg-gray-50">
+      <Header 
+        user={currentUser!} 
         onLogout={handleLogout}
-        onNewBug={() => setShowBugForm(true)}
       />
       
-      <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
-        <Header
-          user={user}
-          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-          sidebarCollapsed={sidebarCollapsed}
+      <div className="flex">
+        <Sidebar 
+          activeView={activeView}
+          onViewChange={setActiveView}
         />
         
-        <main className="p-6 space-y-6">
-          <div className="flex flex-col lg:flex-row gap-6">
-            <FilterPanel
-              filterOptions={filterOptions}
-              onFilterChange={setFilterOptions}
-              users={mockUsers}
-              bugCount={filteredBugs.length}
-            />
+        <main className="flex-1 p-8">
+          <div className="max-w-7xl mx-auto">
+            <Tabs value={activeView} onValueChange={(value) => setActiveView(value as any)}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="bugs">Bug List</TabsTrigger>
+                <TabsTrigger value="report">Report Bug</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="dashboard" className="space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Bug Tracker Dashboard</h1>
+                  <p className="text-gray-600">Monitor and track all bugs in your system</p>
+                </div>
+                <BugTracker bugs={bugs} />
+              </TabsContent>
+
+              <TabsContent value="bugs" className="space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Bug Management</h1>
+                  <p className="text-gray-600">View and manage all reported bugs</p>
+                </div>
+                
+                <FilterPanel 
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  bugs={bugs}
+                />
+                
+                <BugList 
+                  bugs={paginatedBugs}
+                  onUpdateBug={handleUpdateBug}
+                  onDeleteBug={handleDeleteBug}
+                  currentUser={currentUser!}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </TabsContent>
+
+              <TabsContent value="report" className="space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Report New Bug</h1>
+                  <p className="text-gray-600">Create a detailed bug report</p>
+                </div>
+                
+                <BugReport 
+                  onSubmit={handleCreateBug}
+                  currentUser={currentUser!}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
-          
-          <BugList
-            bugs={filteredBugs}
-            users={mockUsers}
-            currentUser={user}
-            onEdit={handleBugEdit}
-            onDelete={handleBugDelete}
-          />
         </main>
       </div>
-
-      {showBugForm && (
-        <BugReport
-          users={mockUsers}
-          currentUser={user}
-          editingBug={editingBug}
-          onSubmit={handleBugSubmit}
-          onClose={() => {
-            setShowBugForm(false);
-            setEditingBug(null);
-          }}
-        />
-      )}
-
-      <NotificationToast />
     </div>
   );
 };

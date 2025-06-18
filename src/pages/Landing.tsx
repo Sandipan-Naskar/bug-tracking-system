@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Bug, Menu, X, Star, Github, Linkedin, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -242,17 +241,17 @@ const Landing = () => {
           <div className="max-w-2xl mx-auto">
             <div className="bg-white rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
               <img 
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face" 
+                src="https://i.postimg.cc/prWx1cF9/Sandipan-Photo.jpg" 
                 alt="Developer" 
                 className="w-32 h-32 rounded-full mx-auto mb-6 object-cover"
               />
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Sandi Kalyan</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Sandipan Naskar</h3>
               <p className="text-gray-600 mb-2">Web Developer</p>
               <p className="text-gray-600 mb-2">B.Tech In Computer Science And Engineering</p>
               <p className="text-gray-600 mb-4">Passionate Software Developer</p>
               <div className="flex justify-center space-x-4">
                 <a 
-                  href="https://github.com/sandikalyan" 
+                  href="https://github.com/Sandipan-Naskar" 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-700 transition-colors"
@@ -260,7 +259,7 @@ const Landing = () => {
                   <Github className="w-6 h-6" />
                 </a>
                 <a 
-                  href="https://linkedin.com/in/sandikalyan" 
+                  href="https://www.linkedin.com/in/sandipan-naskar/" 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-700 transition-colors"
@@ -406,7 +405,7 @@ const Landing = () => {
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>Created by <span className="text-blue-400">Bug Tracker Team</span> | All rights reserved</p>
+            <p>Created by <span className="text-blue-400">Sandipan Naskar</span> | All rights reserved</p>
           </div>
         </div>
       </footer>
