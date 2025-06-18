@@ -31,7 +31,8 @@ export interface FilterOptions {
   status: 'all' | 'open' | 'in-progress' | 'resolved' | 'closed';
   severity: 'all' | 'low' | 'medium' | 'high' | 'critical';
   assignedTo: 'all' | string;
-  sortBy: 'created' | 'updated' | 'severity' | 'status';
+  priority?: 'all' | 'low' | 'medium' | 'high' | 'urgent';
+  sortBy: 'created' | 'updated' | 'severity' | 'status' | 'priority' | 'title';
   sortOrder: 'asc' | 'desc';
 }
 

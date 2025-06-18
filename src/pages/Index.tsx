@@ -56,6 +56,9 @@ const Index = () => {
     if (filterOptions.assignedTo !== 'all') {
       filtered = filtered.filter(bug => bug.assignedTo === filterOptions.assignedTo);
     }
+    if (filterOptions.priority && filterOptions.priority !== 'all') {
+      filtered = filtered.filter(bug => bug.priority === filterOptions.priority);
+    }
 
     // Apply sorting
     filtered.sort((a, b) => {
@@ -66,10 +69,19 @@ const Index = () => {
           aValue = severityOrder[a.severity];
           bValue = severityOrder[b.severity];
           break;
+        case 'priority':
+          const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+          aValue = priorityOrder[a.priority || 'medium'];
+          bValue = priorityOrder[b.priority || 'medium'];
+          break;
         case 'status':
           const statusOrder = { open: 4, 'in-progress': 3, resolved: 2, closed: 1 };
           aValue = statusOrder[a.status];
           bValue = statusOrder[b.status];
+          break;
+        case 'title':
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
           break;
         case 'updated':
           aValue = new Date(a.updatedAt).getTime();
@@ -78,6 +90,12 @@ const Index = () => {
         default:
           aValue = new Date(a.createdAt).getTime();
           bValue = new Date(b.createdAt).getTime();
+      }
+      
+      if (filterOptions.sortBy === 'title') {
+        return filterOptions.sortOrder === 'asc' 
+          ? aValue.localeCompare(bValue) 
+          : bValue.localeCompare(aValue);
       }
       
       return filterOptions.sortOrder === 'asc' ? aValue - bValue : bValue - aValue;

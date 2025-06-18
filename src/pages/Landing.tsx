@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Bug, Menu, X, Star, Github, Linkedin, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -241,20 +242,29 @@ const Landing = () => {
           <div className="max-w-2xl mx-auto">
             <div className="bg-white rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
               <img 
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face" 
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face" 
                 alt="Developer" 
                 className="w-32 h-32 rounded-full mx-auto mb-6 object-cover"
               />
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Your Name</h3>
-              <p className="text-gray-600 mb-2">Full Stack Developer</p>
-              <p className="text-gray-600 mb-2">Computer Science Student</p>
-              <p className="text-gray-600 mb-2">Passionate Software Developer</p>
-              <p className="text-gray-600 mb-4">React & Node.js Specialist</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Sandi Kalyan</h3>
+              <p className="text-gray-600 mb-2">Web Developer</p>
+              <p className="text-gray-600 mb-2">B.Tech In Computer Science And Engineering</p>
+              <p className="text-gray-600 mb-4">Passionate Software Developer</p>
               <div className="flex justify-center space-x-4">
-                <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+                <a 
+                  href="https://github.com/sandikalyan" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700 transition-colors"
+                >
                   <Github className="w-6 h-6" />
                 </a>
-                <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+                <a 
+                  href="https://linkedin.com/in/sandikalyan" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700 transition-colors"
+                >
                   <Linkedin className="w-6 h-6" />
                 </a>
               </div>
