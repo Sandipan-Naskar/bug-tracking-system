@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Bug } from '@/types';
 import { BugHistory } from './BugHistory';
@@ -6,13 +5,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, Clock, User, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Eye, Clock, User, AlertTriangle, CheckCircle, Edit, Trash2 } from 'lucide-react';
 
 interface BugTrackerProps {
   bugs: Bug[];
+  onEditBug?: (updatedBug: Bug) => void;
+  onDeleteBug?: (bugId: string) => void;
 }
 
-export const BugTracker = ({ bugs }: BugTrackerProps) => {
+export const BugTracker = ({ bugs, onEditBug, onDeleteBug }: BugTrackerProps) => {
   const [selectedBug, setSelectedBug] = useState<Bug | null>(null);
 
   const getStatusIcon = (status: string) => {
@@ -124,24 +125,49 @@ export const BugTracker = ({ bugs }: BugTrackerProps) => {
                   </Badge>
                 </div>
                 
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setSelectedBug(bug)}
+                <div className="flex items-center gap-2">
+                  {onEditBug && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEditBug(bug)}
                     >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Track Details
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Bug Tracking Details - {bug.title}</DialogTitle>
-                    </DialogHeader>
-                    {selectedBug && <BugHistory bug={selectedBug} />}
-                  </DialogContent>
-                </Dialog>
+                  )}
+                  
+                  {onDeleteBug && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onDeleteBug(bug.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  )}
+
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setSelectedBug(bug)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Track Details
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Bug Tracking Details - {bug.title}</DialogTitle>
+                      </DialogHeader>
+                      {selectedBug && <BugHistory bug={selectedBug} />}
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Bug, User, FilterOptions } from '@/types';
 import { Header } from '@/components/Header';
@@ -7,7 +6,7 @@ import { BugList } from '@/components/BugList';
 import { BugReport } from '@/components/BugReport';
 import { FilterPanel } from '@/components/FilterPanel';
 import { AuthModal } from '@/components/AuthModal';
-import { BugHistory } from '@/components/BugHistory';
+import { BugHistoryList } from '@/components/BugHistoryList';
 import { BugTracker } from '@/components/BugTracker';
 import { mockBugs, mockUsers } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
@@ -223,7 +222,7 @@ const Index = () => {
           />
         );
       case 'history':
-        return <BugHistory currentUser={currentUser} />;
+        return <BugHistoryList currentUser={currentUser} bugs={bugs} />;
       default:
         return null;
     }
