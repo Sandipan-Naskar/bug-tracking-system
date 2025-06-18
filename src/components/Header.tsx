@@ -7,9 +7,10 @@ interface HeaderProps {
   user: User;
   onToggleSidebar: () => void;
   sidebarCollapsed: boolean;
+  onLogout: () => void;
 }
 
-export const Header = ({ user, onToggleSidebar, sidebarCollapsed }: HeaderProps) => {
+export const Header = ({ user, onToggleSidebar, sidebarCollapsed, onLogout }: HeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -66,7 +67,7 @@ export const Header = ({ user, onToggleSidebar, sidebarCollapsed }: HeaderProps)
           </div>
 
           <div className="flex items-center space-x-3">
-            {user.avatar ? (
+            {user?.avatar ? (
               <img 
                 src={user.avatar} 
                 alt={user.name}
@@ -75,13 +76,19 @@ export const Header = ({ user, onToggleSidebar, sidebarCollapsed }: HeaderProps)
             ) : (
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-semibold">
-                  {user.name.split(' ').map(n => n[0]).join('')}
+                  {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
                 </span>
               </div>
             )}
             <span className="text-sm font-medium text-gray-900 hidden sm:block">
-              {user.name}
+              {user?.name || 'User'}
             </span>
+            <button
+              onClick={onLogout}
+              className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>

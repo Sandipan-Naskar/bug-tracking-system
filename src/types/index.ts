@@ -1,10 +1,10 @@
-
 export interface User {
   id: string;
   email: string;
   name: string;
   role: 'admin' | 'developer' | 'tester' | 'manager';
   avatar?: string;
+  password?: string;
 }
 
 export interface Bug {

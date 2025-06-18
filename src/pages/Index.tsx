@@ -84,6 +84,7 @@ const Index = () => {
   const [activeView, setActiveView] = useState<'dashboard' | 'bugs' | 'report'>('dashboard');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { toast } = useToast();
 
   // Apply filters and sorting
@@ -201,26 +202,34 @@ const Index = () => {
     });
   };
 
+  const handleSidebarViewChange = (view: 'all' | 'my-bugs' | 'assigned') => {
+    if (view === 'all') setActiveView('bugs');
+    else if (view === 'my-bugs') setActiveView('bugs');
+    else if (view === 'assigned') setActiveView('bugs');
+  };
+
   // Pagination
   const totalPages = Math.ceil(filteredBugs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedBugs = filteredBugs.slice(startIndex, startIndex + itemsPerPage);
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !currentUser) {
     return <AuthModal onLogin={handleLogin} />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
-        user={currentUser!} 
+        user={currentUser} 
         onLogout={handleLogout}
+        onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        sidebarCollapsed={sidebarCollapsed}
       />
       
       <div className="flex">
         <Sidebar 
-          activeView={activeView}
-          onViewChange={setActiveView}
+          activeView={activeView === 'bugs' ? 'all' : activeView === 'dashboard' ? 'all' : 'all'}
+          onViewChange={handleSidebarViewChange}
         />
         
         <main className="flex-1 p-8">
@@ -247,16 +256,17 @@ const Index = () => {
                 </div>
                 
                 <FilterPanel 
-                  filters={filters}
-                  onFiltersChange={setFilters}
                   bugs={bugs}
+                  currentFilters={filters}
+                  onFilterChange={setFilters}
                 />
                 
                 <BugList 
                   bugs={paginatedBugs}
-                  onUpdateBug={handleUpdateBug}
-                  onDeleteBug={handleDeleteBug}
-                  currentUser={currentUser!}
+                  onEdit={handleUpdateBug}
+                  onDelete={handleDeleteBug}
+                  currentUser={currentUser}
+                  totalBugs={filteredBugs.length}
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
@@ -271,7 +281,9 @@ const Index = () => {
                 
                 <BugReport 
                   onSubmit={handleCreateBug}
-                  currentUser={currentUser!}
+                  currentUser={currentUser}
+                  users={[currentUser]}
+                  onClose={() => setActiveView('dashboard')}
                 />
               </TabsContent>
             </Tabs>
