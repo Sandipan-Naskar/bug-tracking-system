@@ -1,0 +1,44 @@
+
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    ports:
+      - "3000:4173"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  backend:
+    image: node:18-alpine
+    working_dir: /app/backend
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/bugtracker
+      - JWT_SECRET=your-jwt-secret-key
+    volumes:
+      - ./backend:/app/backend
+      - /app/backend/node_modules
+    depends_on:
+      - mongo
+    command: ["node", "server.js"]
+
+  mongo:
+    image: mongo:6-alpine
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+
+volumes:
+  mongo_data:

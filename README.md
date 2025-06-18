@@ -1,73 +1,167 @@
-# Welcome to your Lovable project
 
-## Project info
+# Bug Tracker Application
 
-**URL**: https://lovable.dev/projects/aa877c68-9996-4322-a5d6-fb7de7d17636
+A comprehensive bug tracking web application built with React, Node.js, and MongoDB.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+### ✅ Implemented Features
 
-**Use Lovable**
+#### Task 1: Project Setup
+- React frontend with Vite
+- User registration and login system
+- JWT-based authentication
+- CORS handling
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/aa877c68-9996-4322-a5d6-fb7de7d17636) and start prompting.
+#### Task 2: UI & Bug Reporting Features
+- **Bug CRUD Operations**: Create, read, update, and delete bug reports
+- **Form Validations**: Required fields with proper validation
+- **Visual Grouping**: Group bugs by status or severity
+- **Responsive Design**: Mobile-friendly interface using Tailwind CSS
+- **Cards and Badges**: Color-coded severity and status indicators
 
-Changes made via Lovable will be committed automatically to this repo.
+#### Task 3: AI Tag Generator
+- **AI-Powered Tagging**: Automatic tag generation based on bug content
+- **Manual Tag Management**: Add, edit, and remove tags
+- **Tag-Based Filtering**: Filter bugs by tags
+- **Smart Tag Suggestions**: Context-aware tag recommendations
 
-**Use your preferred IDE**
+#### Task 4: Dockerization
+- **Frontend Dockerfile**: Containerized React application
+- **Backend Dockerfile**: Containerized Node.js API
+- **Docker Compose**: Complete orchestration with MongoDB
+- **Environment Configuration**: Proper environment variable handling
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+#### Task 5: User Features & Enhancements
+- **Pagination**: Efficient handling of large bug lists
+- **Advanced Filtering**: Filter by status, severity, assignee, priority
+- **Sorting Options**: Sort by date, severity, status, priority, title
+- **Browser Notifications**: Real-time notifications for assignments
+- **Email Notifications**: Automated email alerts for bug assignments
+- **Due Date Tracking**: Cron job for due date reminders
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Tech Stack
 
-Follow these steps:
+- **Frontend**: React.js (Vite), Tailwind CSS, shadcn/ui
+- **Backend**: Node.js, Express.js, JWT Authentication
+- **Database**: MongoDB with Mongoose
+- **AI Integration**: Mock AI service (ready for OpenAI/Groq integration)
+- **DevOps**: Docker, Docker Compose
+- **Notifications**: Web Notifications API, Nodemailer
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Quick Start
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Using Docker (Recommended)
 
-# Step 3: Install the necessary dependencies.
-npm i
+```bash
+# Clone the repository
+git clone <repository-url>
+cd bug-tracker
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start all services
+docker-compose up --build
+
+# Access the application
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:5000
+# MongoDB: localhost:27017
+```
+
+### Manual Setup
+
+#### Backend Setup
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Edit .env with your configuration
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+#### Frontend Setup
+```bash
+npm install
+npm run dev
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Environment Configuration
 
-**Use GitHub Codespaces**
+Copy `backend/.env.example` to `backend/.env` and configure:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```env
+MONGO_URI=mongodb://localhost:27017/bugtracker
+JWT_SECRET=your-super-secret-jwt-key
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-password
+PORT=5000
+NODE_ENV=development
+```
 
-## What technologies are used for this project?
+## API Endpoints
 
-This project is built with:
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Bugs
+- `GET /api/bugs` - Get bugs with pagination and filters
+- `POST /api/bugs` - Create new bug
+- `PUT /api/bugs/:id` - Update bug
+- `DELETE /api/bugs/:id` - Delete bug
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/aa877c68-9996-4322-a5d6-fb7de7d17636) and click on Share -> Publish.
+```
+bug-tracker/
+├── src/                          # Frontend React application
+│   ├── components/              # Reusable UI components
+│   ├── pages/                   # Main application pages
+│   ├── services/               # API and notification services
+│   └── types/                  # TypeScript type definitions
+├── backend/                     # Node.js API server
+│   ├── server.js              # Main server file
+│   ├── package.json           # Backend dependencies
+│   └── Dockerfile             # Backend container configuration
+├── docker-compose.yml          # Multi-service orchestration
+├── Dockerfile                  # Frontend container configuration
+└── README.md                   # This file
+```
 
-## Can I connect a custom domain to my Lovable project?
+## Features Overview
 
-Yes, you can!
+### Bug Management
+- Create detailed bug reports with all necessary fields
+- Edit and update bug information
+- Delete bugs with confirmation
+- Visual status and severity indicators
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Organization & Filtering
+- Group bugs by status or severity
+- Advanced filtering by multiple criteria
+- Sort by various attributes
+- Pagination for performance
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Notifications
+- Browser push notifications
+- Email notifications for assignments
+- Due date reminders via cron jobs
+
+### AI Integration
+- Automatic tag generation based on bug content
+- Smart categorization suggestions
+- Enhanced searchability through AI-generated tags
+
+## Development
+
+### Adding New Features
+1. Follow the component-based architecture
+2. Add proper TypeScript types
+3. Implement responsive design
+4. Add appropriate tests
+
+### Deployment
+The application is fully containerized and ready for deployment on any Docker-compatible platform.
+
+## License
+
+This project is for educational purposes and follows the assignment requirements.
