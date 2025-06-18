@@ -27,6 +27,11 @@ export const Sidebar = ({
     { id: 'assigned', label: 'Assigned to Me', icon: Search, count: 0 },
   ];
 
+  // Add null check for user
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-40 ${
       collapsed ? 'w-16' : 'w-64'

@@ -17,6 +17,7 @@ const Index = () => {
   const [bugs, setBugs] = useState<Bug[]>(mockBugs);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeView, setActiveView] = useState<'dashboard' | 'bugs' | 'report' | 'history'>('dashboard');
+  const [currentView, setCurrentView] = useState<'all' | 'my-bugs' | 'assigned'>('all');
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
     status: 'all',
     severity: 'all',
@@ -89,8 +90,13 @@ const Index = () => {
     });
   };
 
-  // Filter bugs based on current filters
+  // Filter bugs based on current filters and view
   const filteredBugs = bugs.filter(bug => {
+    // View-based filtering
+    if (currentView === 'my-bugs' && bug.reportedBy !== currentUser?.id) return false;
+    if (currentView === 'assigned' && bug.assignedTo !== currentUser?.id) return false;
+    
+    // Filter-based filtering
     if (currentFilters.status !== 'all' && bug.status !== currentFilters.status) return false;
     if (currentFilters.severity !== 'all' && bug.severity !== currentFilters.severity) return false;
     if (currentFilters.assignedTo !== 'all' && bug.assignedTo !== currentFilters.assignedTo) return false;
@@ -147,6 +153,15 @@ const Index = () => {
     currentPage * bugsPerPage
   );
 
+  const handleViewChange = (view: 'all' | 'my-bugs' | 'assigned') => {
+    setCurrentView(view);
+    setCurrentPage(1); // Reset to first page when changing view
+  };
+
+  const handleNewBug = () => {
+    setActiveView('report');
+  };
+
   if (!currentUser) {
     return <AuthModal onLogin={handleLogin} />;
   }
@@ -157,7 +172,6 @@ const Index = () => {
         return (
           <BugTracker 
             bugs={bugs}
-            currentUser={currentUser}
             onEditBug={handleEditBug}
             onDeleteBug={handleDeleteBug}
           />
@@ -171,6 +185,7 @@ const Index = () => {
             />
             <BugList 
               bugs={paginatedBugs}
+              users={mockUsers}
               onEdit={handleEditBug}
               onDelete={handleDeleteBug}
               currentUser={currentUser}
@@ -203,10 +218,12 @@ const Index = () => {
           <BugReport 
             onSubmit={handleAddBug}
             users={mockUsers}
+            currentUser={currentUser}
+            onClose={() => setActiveView('bugs')}
           />
         );
       case 'history':
-        return <BugHistory bugs={bugs} currentUser={currentUser} />;
+        return <BugHistory currentUser={currentUser} />;
       default:
         return null;
     }
@@ -223,9 +240,13 @@ const Index = () => {
       
       <div className="flex">
         <Sidebar 
+          user={currentUser}
           collapsed={sidebarCollapsed}
-          activeView={activeView}
-          onViewChange={setActiveView}
+          currentView={currentView}
+          onViewChange={handleViewChange}
+          onToggleCollapse={handleToggleSidebar}
+          onLogout={handleLogout}
+          onNewBug={handleNewBug}
         />
         
         <main className={`flex-1 p-6 transition-all duration-300 ${
