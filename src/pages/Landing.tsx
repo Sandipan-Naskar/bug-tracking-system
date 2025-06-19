@@ -120,9 +120,9 @@ const Landing = () => {
     {
       image: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=200&fit=crop",
       title: "MERN Stack - What is MERN Stack?",
-      author: "by Javatpoint",
-      date: "2011-2021",
-      link: "https://www.javatpoint.com/mern-stack"
+      author: "by GeeksforGeeks",
+      date: "2024",
+      link: "https://www.geeksforgeeks.org/mern/understand-mern-stack/"
     }
   ];
 
