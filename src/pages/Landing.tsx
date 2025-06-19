@@ -296,7 +296,7 @@ const Landing = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Sandipan Naskar</h3>
               <p className="text-gray-600 mb-2">Web Developer</p>
               <p className="text-gray-600 mb-2">B.Tech In Computer Science And Engineering</p>
-              <p className="text-gray-600 mb-4">Computer Science Student</p>
+              <p className="text-gray-600 mb-4">🚀 Passionate about building full-stack web applications with clean UI and efficient backends.</p>
               <div className="flex justify-center space-x-4">
                 <a 
                   href="https://github.com/Sandipan-Naskar" 

@@ -36,7 +36,7 @@ export const BugReport = ({ users, currentUser, editingBug, onSubmit, onClose }:
         description: editingBug.description,
         severity: editingBug.severity,
         status: editingBug.status,
-        assignedTo: typeof editingBug.assignedTo === 'string' ? editingBug.assignedTo : editingBug.assignedTo?.id || '',
+        assignedTo: editingBug.assignedTo || '',
         stepsToReproduce: editingBug.stepsToReproduce || '',
         expectedBehavior: editingBug.expectedBehavior || '',
         actualBehavior: editingBug.actualBehavior || '',
