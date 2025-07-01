@@ -129,9 +129,15 @@ const Index = () => {
       if (!matchesSearch) return false;
     }
 
-    // View-based filtering
-    if (currentView === 'my-bugs' && bug.reportedBy !== currentUser?.id) return false;
-    if (currentView === 'assigned' && bug.assignedTo !== currentUser?.id) return false;
+    // View-based filtering - Fixed logic
+    if (currentView === 'my-bugs') {
+      // Only show bugs reported BY the current user
+      if (bug.reportedBy !== currentUser?.id) return false;
+    } else if (currentView === 'assigned') {
+      // Only show bugs assigned TO the current user
+      if (bug.assignedTo !== currentUser?.id) return false;
+    }
+    // 'all' view shows all bugs (no additional filtering needed)
     
     // Filter-based filtering
     if (currentFilters.status !== 'all' && bug.status !== currentFilters.status) return false;
