@@ -18,6 +18,7 @@ const Index = () => {
   const [activeView, setActiveView] = useState<'dashboard' | 'bugs' | 'report' | 'history'>('dashboard');
   const [currentView, setCurrentView] = useState<'all' | 'my-bugs' | 'assigned'>('all');
   const [editingBug, setEditingBug] = useState<Bug | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
     status: 'all',
     severity: 'all',
@@ -31,6 +32,11 @@ const Index = () => {
   const { toast } = useToast();
 
   const bugsPerPage = 10;
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -108,8 +114,20 @@ const Index = () => {
     setActiveView(editingBug ? 'dashboard' : 'bugs');
   };
 
-  // Filter bugs based on current filters and view
+  // Filter bugs based on current filters, view, and search query
   const filteredBugs = bugs.filter(bug => {
+    // Search functionality
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = 
+        bug.title.toLowerCase().includes(query) ||
+        bug.description.toLowerCase().includes(query) ||
+        bug.stepsToReproduce.toLowerCase().includes(query) ||
+        (bug.tags && bug.tags.some(tag => tag.toLowerCase().includes(query)));
+      
+      if (!matchesSearch) return false;
+    }
+
     // View-based filtering
     if (currentView === 'my-bugs' && bug.reportedBy !== currentUser?.id) return false;
     if (currentView === 'assigned' && bug.assignedTo !== currentUser?.id) return false;
@@ -190,7 +208,7 @@ const Index = () => {
       case 'dashboard':
         return (
           <BugTracker 
-            bugs={bugs}
+            bugs={filteredBugs}
             onEditBug={handleEditBug}
             onDeleteBug={handleDeleteBug}
           />
@@ -198,6 +216,22 @@ const Index = () => {
       case 'bugs':
         return (
           <div className="space-y-6">
+            {searchQuery && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-blue-800">
+                  Showing results for: <span className="font-semibold">"{searchQuery}"</span>
+                  {filteredBugs.length === 0 && " - No bugs found"}
+                </p>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="text-blue-600 hover:text-blue-800 text-sm mt-1"
+                  >
+                    Clear search
+                  </button>
+                )}
+              </div>
+            )}
             <FilterPanel 
               currentFilters={currentFilters}
               onFilterChange={setCurrentFilters}
@@ -256,6 +290,7 @@ const Index = () => {
         onToggleSidebar={handleToggleSidebar}
         sidebarCollapsed={sidebarCollapsed}
         onLogout={handleLogout}
+        onSearch={handleSearch}
       />
       
       <div className="flex">

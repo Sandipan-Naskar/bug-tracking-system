@@ -8,11 +8,27 @@ interface HeaderProps {
   onToggleSidebar: () => void;
   sidebarCollapsed: boolean;
   onLogout: () => void;
+  onSearch?: (query: string) => void;
 }
 
-export const Header = ({ user, onToggleSidebar, sidebarCollapsed, onLogout }: HeaderProps) => {
+export const Header = ({ user, onToggleSidebar, sidebarCollapsed, onLogout, onSearch }: HeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (onSearch) {
+      onSearch(query);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onSearch) {
+      onSearch(searchQuery);
+    }
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4 relative z-40">
@@ -25,16 +41,16 @@ export const Header = ({ user, onToggleSidebar, sidebarCollapsed, onLogout }: He
             <Menu className="w-5 h-5" />
           </button>
           
-          <div className="relative flex-1 max-w-md">
+          <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Search bugs..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
             />
-          </div>
+          </form>
         </div>
 
         <div className="flex items-center space-x-4">
