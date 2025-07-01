@@ -1,5 +1,5 @@
 
-import { Bell, Menu, Search } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import { User } from '@/types';
 import { useState } from 'react';
 
@@ -8,49 +8,21 @@ interface HeaderProps {
   onToggleSidebar: () => void;
   sidebarCollapsed: boolean;
   onLogout: () => void;
-  onSearch?: (query: string) => void;
 }
 
-export const Header = ({ user, onToggleSidebar, sidebarCollapsed, onLogout, onSearch }: HeaderProps) => {
-  const [searchQuery, setSearchQuery] = useState('');
+export const Header = ({ user, onToggleSidebar, sidebarCollapsed, onLogout }: HeaderProps) => {
   const [showNotifications, setShowNotifications] = useState(false);
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    if (onSearch) {
-      onSearch(query);
-    }
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (onSearch) {
-      onSearch(searchQuery);
-    }
-  };
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4 relative z-40">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4 flex-1">
+        <div className="flex items-center space-x-4">
           <button
             onClick={onToggleSidebar}
             className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
-          
-          <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search bugs..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
-            />
-          </form>
         </div>
 
         <div className="flex items-center space-x-4">

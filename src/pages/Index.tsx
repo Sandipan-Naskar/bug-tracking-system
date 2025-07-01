@@ -8,6 +8,7 @@ import { FilterPanel } from '@/components/FilterPanel';
 import { AuthModal } from '@/components/AuthModal';
 import { BugHistoryList } from '@/components/BugHistoryList';
 import { BugTracker } from '@/components/BugTracker';
+import { SearchBar } from '@/components/SearchBar';
 import { mockBugs, mockUsers } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
 
@@ -207,15 +208,43 @@ const Index = () => {
     switch (activeView) {
       case 'dashboard':
         return (
-          <BugTracker 
-            bugs={filteredBugs}
-            onEditBug={handleEditBug}
-            onDeleteBug={handleDeleteBug}
-          />
+          <div className="space-y-6">
+            <SearchBar 
+              onSearch={handleSearch}
+              searchQuery={searchQuery}
+              placeholder="Search bugs in dashboard..."
+            />
+            {searchQuery && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-blue-800">
+                  Showing results for: <span className="font-semibold">"{searchQuery}"</span>
+                  {filteredBugs.length === 0 && " - No bugs found"}
+                </p>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="text-blue-600 hover:text-blue-800 text-sm mt-1"
+                  >
+                    Clear search
+                  </button>
+                )}
+              </div>
+            )}
+            <BugTracker 
+              bugs={filteredBugs}
+              onEditBug={handleEditBug}
+              onDeleteBug={handleDeleteBug}
+            />
+          </div>
         );
       case 'bugs':
         return (
           <div className="space-y-6">
+            <SearchBar 
+              onSearch={handleSearch}
+              searchQuery={searchQuery}
+              placeholder="Search bugs..."
+            />
             {searchQuery && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-blue-800">
@@ -277,7 +306,16 @@ const Index = () => {
           />
         );
       case 'history':
-        return <BugHistoryList currentUser={currentUser} bugs={bugs} />;
+        return (
+          <div className="space-y-6">
+            <SearchBar 
+              onSearch={handleSearch}
+              searchQuery={searchQuery}
+              placeholder="Search bug history..."
+            />
+            <BugHistoryList currentUser={currentUser} bugs={searchQuery ? filteredBugs : bugs} />
+          </div>
+        );
       default:
         return null;
     }
@@ -290,7 +328,6 @@ const Index = () => {
         onToggleSidebar={handleToggleSidebar}
         sidebarCollapsed={sidebarCollapsed}
         onLogout={handleLogout}
-        onSearch={handleSearch}
       />
       
       <div className="flex">
