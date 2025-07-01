@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { Bug, User } from '@/types';
@@ -112,6 +113,12 @@ export const BugReport = ({ users, currentUser, editingBug, onSubmit, onClose }:
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
+  // Get the name of the assigned user for display
+  const getAssignedUserName = (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    return user ? user.name : 'Unknown User';
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -223,10 +230,15 @@ export const BugReport = ({ users, currentUser, editingBug, onSubmit, onClose }:
                     <option value="">Unassigned</option>
                     {users.map((user) => (
                       <option key={user.id} value={user.id}>
-                        {user.name}
+                        {user.name} ({user.role})
                       </option>
                     ))}
                   </select>
+                  {formData.assignedTo && (
+                    <p className="mt-1 text-sm text-gray-600">
+                      Currently assigned to: <span className="font-medium">{getAssignedUserName(formData.assignedTo)}</span>
+                    </p>
+                  )}
                 </div>
               </div>
 
