@@ -1,6 +1,7 @@
 
-import { Bug, Search, User, Settings, Plus, Menu, LogOut } from 'lucide-react';
+import { Bug, Search, User, Plus, Menu, LogOut } from 'lucide-react';
 import { User as UserType } from '@/types';
+import { SettingsDialog } from './SettingsDialog';
 
 interface SidebarProps {
   user: UserType;
@@ -132,12 +133,7 @@ export const Sidebar = ({
 
         {/* Footer */}
         <div className="p-4 border-t border-gray-200 space-y-2">
-          <button className={`w-full flex items-center text-gray-700 hover:bg-gray-50 rounded-lg transition-colors ${
-            collapsed ? 'p-3 justify-center' : 'px-4 py-3'
-          }`}>
-            <Settings className="w-5 h-5" />
-            {!collapsed && <span className="ml-3">Settings</span>}
-          </button>
+          <SettingsDialog user={user} collapsed={collapsed} />
           
           <button 
             onClick={onLogout}
