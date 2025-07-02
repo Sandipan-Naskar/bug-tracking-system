@@ -80,10 +80,14 @@ export const AuthModal = ({ onLogin, onClose }: AuthModalProps) => {
 
       if (isLogin) {
         // Login logic
-        const existingUser = users.find(u => 
-          u.email.toLowerCase() === formData.email.toLowerCase() && 
-          u.password === formData.password
-        );
+        console.log('Login attempt:', formData.email, formData.password);
+        console.log('Available users:', users);
+        const existingUser = users.find(u => {
+          console.log('Checking user:', u.email, u.password);
+          return u.email.toLowerCase() === formData.email.toLowerCase() && 
+                 u.password === formData.password;
+        });
+        console.log('Found user:', existingUser);
         
         if (existingUser) {
           onLogin(existingUser);
