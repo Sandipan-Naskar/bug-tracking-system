@@ -30,9 +30,12 @@ export const AuthModal = ({ onLogin, onClose }: AuthModalProps) => {
   // Load users from localStorage on mount
   useEffect(() => {
     const savedUsers = localStorage.getItem('bug-tracker-users');
+    console.log('Loading users from localStorage:', savedUsers);
     if (savedUsers) {
       try {
-        setUsers(JSON.parse(savedUsers));
+        const parsedUsers = JSON.parse(savedUsers);
+        console.log('Parsed users:', parsedUsers);
+        setUsers(parsedUsers);
       } catch (error) {
         console.error('Failed to parse saved users:', error);
       }
