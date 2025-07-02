@@ -30,11 +30,9 @@ export const AuthModal = ({ onLogin, onClose }: AuthModalProps) => {
   // Load users from localStorage on mount
   useEffect(() => {
     const savedUsers = localStorage.getItem('bug-tracker-users');
-    console.log('Loading users from localStorage:', savedUsers);
     if (savedUsers) {
       try {
         const parsedUsers = JSON.parse(savedUsers);
-        console.log('Parsed users:', parsedUsers);
         setUsers(parsedUsers);
       } catch (error) {
         console.error('Failed to parse saved users:', error);
@@ -80,10 +78,11 @@ export const AuthModal = ({ onLogin, onClose }: AuthModalProps) => {
       }
 
       if (isLogin) {
-        // Login logic
+        // Login logic - match by email, password, and optionally role
         const existingUser = users.find(u => 
           u.email.toLowerCase() === formData.email.toLowerCase() && 
-          u.password === formData.password
+          u.password === formData.password &&
+          u.role === formData.role
         );
         
         if (existingUser) {
@@ -248,38 +247,37 @@ export const AuthModal = ({ onLogin, onClose }: AuthModalProps) => {
               </div>
             </div>
 
+            {/* Role selection for both login and signup */}
+            <div className="space-y-2">
+              <Label htmlFor="role">Role {!isLogin ? '*' : ''}</Label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                required={!isLogin}
+              >
+                <option value="developer">Developer</option>
+                <option value="tester">Tester</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
             {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    required
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    placeholder="Confirm your password"
-                    className="w-full"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
-                  <select
-                    id="role"
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                  >
-                    <option value="developer">Developer</option>
-                    <option value="tester">Tester</option>
-                    <option value="manager">Manager</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-              </>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  placeholder="Confirm your password"
+                  className="w-full"
+                />
+              </div>
             )}
             
             <Button 
