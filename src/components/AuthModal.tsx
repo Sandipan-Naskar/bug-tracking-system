@@ -41,9 +41,7 @@ export const AuthModal = ({ onLogin, onClose }: AuthModalProps) => {
 
   // Save users to localStorage whenever users change
   useEffect(() => {
-    if (users.length > 0) {
-      localStorage.setItem('bug-tracker-users', JSON.stringify(users));
-    }
+    localStorage.setItem('bug-tracker-users', JSON.stringify(users));
   }, [users]);
 
   const validateEmail = (email: string) => {
@@ -80,14 +78,10 @@ export const AuthModal = ({ onLogin, onClose }: AuthModalProps) => {
 
       if (isLogin) {
         // Login logic
-        console.log('Login attempt:', formData.email, formData.password);
-        console.log('Available users:', users);
-        const existingUser = users.find(u => {
-          console.log('Checking user:', u.email, u.password);
-          return u.email.toLowerCase() === formData.email.toLowerCase() && 
-                 u.password === formData.password;
-        });
-        console.log('Found user:', existingUser);
+        const existingUser = users.find(u => 
+          u.email.toLowerCase() === formData.email.toLowerCase() && 
+          u.password === formData.password
+        );
         
         if (existingUser) {
           onLogin(existingUser);
