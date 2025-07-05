@@ -117,11 +117,31 @@ const Landing = () => {
   ];
 
   const results = [
-    { image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop", title: "Login Page" },
-    { image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop", title: "Registration Page" },
-    { image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop", title: "Add New Bug Section" },
-    { image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop", title: "Filter and View Bugs" },
-    { image: "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=400&h=300&fit=crop", title: "Database View" }
+    { 
+      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop", 
+      title: "Login Page",
+      action: () => navigate('/app')
+    },
+    { 
+      image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop", 
+      title: "Registration Page",
+      action: () => navigate('/app')
+    },
+    { 
+      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop", 
+      title: "Add New Bug Section",
+      action: () => navigate('/app')
+    },
+    { 
+      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop", 
+      title: "Filter and View Bugs",
+      action: () => navigate('/app')
+    },
+    { 
+      image: "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=400&h=300&fit=crop", 
+      title: "Database View",
+      action: () => navigate('/app')
+    }
   ];
 
   const outcomes = [
@@ -311,14 +331,21 @@ const Landing = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {results.map((result, index) => (
-              <div key={index} className="bg-white rounded-xl p-6 hover:shadow-lg transition-shadow">
+              <div 
+                key={index} 
+                className="bg-white rounded-xl p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={result.action}
+              >
                 <img src={result.image} alt={result.title} className="w-full h-48 object-cover rounded-lg mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">{result.title}</h3>
-                <div className="flex space-x-1">
+                <div className="flex space-x-1 mb-3">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className={`w-5 h-5 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
                   ))}
                 </div>
+                <button className="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+                  View Demo
+                </button>
               </div>
             ))}
           </div>
