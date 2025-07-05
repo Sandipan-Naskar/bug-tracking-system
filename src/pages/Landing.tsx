@@ -120,27 +120,27 @@ const Landing = () => {
     { 
       image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop", 
       title: "Login Page",
-      action: () => navigate('/app')
+      action: () => navigate('/app?view=login')
     },
     { 
       image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop", 
       title: "Registration Page",
-      action: () => navigate('/app')
+      action: () => navigate('/app?view=register')
     },
     { 
       image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop", 
       title: "Add New Bug Section",
-      action: () => navigate('/app')
+      action: () => navigate('/app?view=report')
     },
     { 
       image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop", 
       title: "Filter and View Bugs",
-      action: () => navigate('/app')
+      action: () => navigate('/app?view=bugs')
     },
     { 
       image: "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=400&h=300&fit=crop", 
       title: "Database View",
-      action: () => navigate('/app')
+      action: () => navigate('/app?view=dashboard')
     }
   ];
 

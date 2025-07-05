@@ -11,10 +11,11 @@ import { Eye, EyeOff } from 'lucide-react';
 interface AuthModalProps {
   onLogin: (user: User) => void;
   onClose?: () => void;
+  initialMode?: 'login' | 'register';
 }
 
-export const AuthModal = ({ onLogin, onClose }: AuthModalProps) => {
-  const [isLogin, setIsLogin] = useState(true);
+export const AuthModal = ({ onLogin, onClose, initialMode = 'login' }: AuthModalProps) => {
+  const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',

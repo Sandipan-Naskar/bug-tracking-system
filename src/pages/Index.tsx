@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Bug, User, FilterOptions } from '@/types';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
@@ -13,6 +14,7 @@ import { mockBugs, mockUsers } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [bugs, setBugs] = useState<Bug[]>(mockBugs);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -30,7 +32,26 @@ const Index = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [showAuthModal, setShowAuthModal] = useState(true);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
   const { toast } = useToast();
+
+  // Handle URL parameters for specific views
+  useEffect(() => {
+    const view = searchParams.get('view');
+    if (view) {
+      if (view === 'login') {
+        setAuthModalMode('login');
+        setShowAuthModal(true);
+      } else if (view === 'register') {
+        setAuthModalMode('register');
+        setShowAuthModal(true);
+      } else if (['dashboard', 'bugs', 'report', 'history'].includes(view)) {
+        setActiveView(view as 'dashboard' | 'bugs' | 'report' | 'history');
+        // Clear the URL parameter after setting the view
+        setSearchParams({});
+      }
+    }
+  }, [searchParams, setSearchParams]);
 
   const bugsPerPage = 10;
 
@@ -207,7 +228,7 @@ const Index = () => {
   };
 
   if (!currentUser) {
-    return <AuthModal onLogin={handleLogin} />;
+    return <AuthModal onLogin={handleLogin} initialMode={authModalMode} />;
   }
 
   const renderContent = () => {
