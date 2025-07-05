@@ -10,6 +10,7 @@ const Landing = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [expandedFeature, setExpandedFeature] = useState<number | null>(null);
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -98,17 +99,20 @@ const Landing = () => {
     {
       image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop",
       title: "Login/Register Feature and Strong Password Authentication System",
-      description: "This feature will be helpful for the user to keep their Bug related data safe as here B-Crypt Password Algorithm is used which is the very safest algorithm."
+      description: "This feature will be helpful for the user to keep their Bug related data safe as here B-Crypt Password Algorithm is used which is the very safest algorithm.",
+      details: "Our authentication system uses industry-standard BCrypt hashing for password security. Features include user registration with email validation, secure password requirements, role-based access control, and session management. The system supports multiple user roles including Developer, Tester, Manager, and Admin, each with specific permissions and access levels."
     },
     {
       image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop",
       title: "Add New Bug feature, Keep track of Status of the Bug and Location of the Bug feature in a single System",
-      description: "This feature will be helpful for the developer to create, update and delete Bug related data and prioritized the bug easily and efficiently."
+      description: "This feature will be helpful for the developer to create, update and delete Bug related data and prioritized the bug easily and efficiently.",
+      details: "Comprehensive bug management system allowing users to create detailed bug reports with title, description, severity levels, priority settings, and status tracking. Users can assign bugs to team members, set due dates, attach files, and track progress through customizable workflows. The system includes real-time notifications and automated status updates."
     },
     {
       image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop",
       title: "Feature of categorization of the Bugs (High, Medium, Low)",
-      description: "Add Notes, edit Notes related to Bugs for future use and having the strong storage facility in the form of MongoDB database that uses AWS cloud services"
+      description: "Add Notes, edit Notes related to Bugs for future use and having the strong storage facility in the form of MongoDB database that uses AWS cloud services",
+      details: "Advanced categorization system with priority levels (Critical, High, Medium, Low), severity classifications, and custom tags. Users can add detailed notes, comments, and documentation to each bug. The system uses MongoDB for reliable data storage with automatic backups, ensuring data integrity and scalability for growing teams."
     }
   ];
 
@@ -282,8 +286,16 @@ const Landing = () => {
                 <img src={feature.image} alt={feature.title} className="w-full h-48 object-cover rounded-lg mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
                 <p className="text-gray-600 mb-4">{feature.description}</p>
-                <button className="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
-                  Read more
+                {expandedFeature === index && (
+                  <div className="mb-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                    <p className="text-gray-700 text-sm leading-relaxed">{feature.details}</p>
+                  </div>
+                )}
+                <button 
+                  onClick={() => setExpandedFeature(expandedFeature === index ? null : index)}
+                  className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+                >
+                  {expandedFeature === index ? 'Show less' : 'Read more'}
                 </button>
               </div>
             ))}
