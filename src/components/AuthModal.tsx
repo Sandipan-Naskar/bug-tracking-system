@@ -79,17 +79,25 @@ export const AuthModal = ({ onLogin, onClose, initialMode = 'login' }: AuthModal
       }
 
       if (isLogin) {
-        // Login logic - match by email, password, and optionally role
-        const existingUser = users.find(u => 
+        // Login logic - first try exact match with role, then try without role
+        let existingUser = users.find(u => 
           u.email.toLowerCase() === formData.email.toLowerCase() && 
           u.password === formData.password &&
           u.role === formData.role
         );
         
+        // If no exact match found, try matching without role requirement
+        if (!existingUser) {
+          existingUser = users.find(u => 
+            u.email.toLowerCase() === formData.email.toLowerCase() && 
+            u.password === formData.password
+          );
+        }
+        
         if (existingUser) {
           onLogin(existingUser);
           toast({
-            title: "Login Successful",
+            title: "Login Successful", 
             description: `Welcome back, ${existingUser.name}!`,
           });
         } else {

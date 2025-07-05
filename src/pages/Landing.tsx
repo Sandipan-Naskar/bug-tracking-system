@@ -338,14 +338,11 @@ const Landing = () => {
               >
                 <img src={result.image} alt={result.title} className="w-full h-48 object-cover rounded-lg mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">{result.title}</h3>
-                <div className="flex space-x-1 mb-3">
+                <div className="flex space-x-1">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className={`w-5 h-5 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
                   ))}
                 </div>
-                <button className="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
-                  View Demo
-                </button>
               </div>
             ))}
           </div>
