@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import { Mail, ArrowLeft } from 'lucide-react';
 
 interface AuthModalProps {
   onLogin: (user: User) => void;
@@ -16,7 +18,7 @@ interface AuthModalProps {
 
 export const AuthModal = ({ onLogin, onClose, initialMode = 'login' }: AuthModalProps) => {
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
-  const [showPassword, setShowPassword] = useState(false);
+  const [isOtpMode, setIsOtpMode] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -24,35 +26,12 @@ export const AuthModal = ({ onLogin, onClose, initialMode = 'login' }: AuthModal
     name: '',
     role: 'developer' as const
   });
-  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  // Load users from localStorage on mount
-  useEffect(() => {
-    const savedUsers = localStorage.getItem('bug-tracker-users');
-    if (savedUsers) {
-      try {
-        const parsedUsers = JSON.parse(savedUsers);
-        setUsers(parsedUsers);
-      } catch (error) {
-        console.error('Failed to parse saved users:', error);
-      }
-    }
-  }, []);
-
-  // Save users to localStorage whenever users change
-  useEffect(() => {
-    localStorage.setItem('bug-tracker-users', JSON.stringify(users));
-  }, [users]);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  };
-
-  const validatePassword = (password: string) => {
-    return password.length >= 6;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,55 +48,31 @@ export const AuthModal = ({ onLogin, onClose, initialMode = 'login' }: AuthModal
         return;
       }
 
-      if (!validatePassword(formData.password)) {
-        toast({
-          title: "Weak Password",
-          description: "Password must be at least 6 characters long.",
-          variant: "destructive"
-        });
-        return;
-      }
-
       if (isLogin) {
-        // Login logic - first try exact match with role, then try without role
-        let existingUser = users.find(u => 
-          u.email.toLowerCase() === formData.email.toLowerCase() && 
-          u.password === formData.password &&
-          u.role === formData.role
-        );
-        
-        // If no exact match found, try matching without role requirement
-        if (!existingUser) {
-          existingUser = users.find(u => 
-            u.email.toLowerCase() === formData.email.toLowerCase() && 
-            u.password === formData.password
-          );
-        }
-        
-        if (existingUser) {
-          onLogin(existingUser);
-          toast({
-            title: "Login Successful", 
-            description: `Welcome back, ${existingUser.name}!`,
-          });
-        } else {
+        // Send OTP for login
+        const { error } = await supabase.auth.signInWithOtp({
+          email: formData.email,
+          options: {
+            shouldCreateUser: false,
+            emailRedirectTo: `${window.location.origin}/`
+          }
+        });
+
+        if (error) {
           toast({
             title: "Login Failed",
-            description: "Invalid email or password. Please check your credentials and try again.",
+            description: error.message,
             variant: "destructive"
+          });
+        } else {
+          setIsOtpMode(true);
+          toast({
+            title: "Check Your Email",
+            description: "We've sent you a magic link to sign in. Please check your inbox.",
           });
         }
       } else {
         // Signup logic
-        if (formData.password !== formData.confirmPassword) {
-          toast({
-            title: "Password Mismatch",
-            description: "Passwords do not match. Please try again.",
-            variant: "destructive"
-          });
-          return;
-        }
-
         if (!formData.name.trim()) {
           toast({
             title: "Missing Name",
@@ -127,36 +82,30 @@ export const AuthModal = ({ onLogin, onClose, initialMode = 'login' }: AuthModal
           return;
         }
 
-        const existingUser = users.find(u => 
-          u.email.toLowerCase() === formData.email.toLowerCase()
-        );
+        const { error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: formData.name.trim(),
+              role: formData.role
+            }
+          }
+        });
 
-        if (existingUser) {
+        if (error) {
           toast({
-            title: "Account Exists",
-            description: "An account with this email already exists. Please login instead.",
+            title: "Signup Failed",
+            description: error.message,
             variant: "destructive"
           });
-          setIsLogin(true);
-          return;
+        } else {
+          toast({
+            title: "Account Created",
+            description: "Please check your email to confirm your account.",
+          });
         }
-        
-        const newUser: User = {
-          id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          email: formData.email.toLowerCase(),
-          name: formData.name.trim(),
-          role: formData.role,
-          password: formData.password
-        };
-        
-        const updatedUsers = [...users, newUser];
-        setUsers(updatedUsers);
-        onLogin(newUser);
-        
-        toast({
-          title: "Account Created",
-          description: `Welcome to Bug Tracker, ${newUser.name}!`,
-        });
       }
     } catch (error) {
       toast({
@@ -168,6 +117,39 @@ export const AuthModal = ({ onLogin, onClose, initialMode = 'login' }: AuthModal
       setIsLoading(false);
     }
   };
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Get user profile data
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (!error && profile) {
+            const user: User = {
+              id: profile.id,
+              email: profile.email,
+              name: profile.full_name,
+              role: profile.role as 'developer' | 'admin' | 'tester' | 'manager',
+              password: '' // Not needed for Supabase auth
+            };
+            onLogin(user);
+            toast({
+              title: "Login Successful",
+              description: `Welcome back, ${profile.full_name}!`,
+            });
+          }
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [onLogin, toast]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData(prev => ({
@@ -202,104 +184,127 @@ export const AuthModal = ({ onLogin, onClose, initialMode = 'login' }: AuthModal
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name *</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="Enter your full name"
-                  className="w-full"
-                />
+{isOtpMode ? (
+            <div className="space-y-4">
+              <div className="text-center">
+                <Mail className="mx-auto h-12 w-12 text-blue-500 mb-4" />
+                <h3 className="text-lg font-medium">Check your email</h3>
+                <p className="text-sm text-gray-600 mt-2">
+                  We've sent a magic link to <strong>{formData.email}</strong>
+                </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Click the link in your email to sign in.
+                </p>
               </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="Enter your email"
-                className="w-full"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder={isLogin ? "Enter your password" : "Create a password (min 6 chars)"}
-                  className="w-full pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Role selection for both login and signup */}
-            <div className="space-y-2">
-              <Label htmlFor="role">Role {!isLogin ? '*' : ''}</Label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                required={!isLogin}
+              
+              <Button 
+                type="button" 
+                variant="outline"
+                className="w-full" 
+                onClick={() => {
+                  setIsOtpMode(false);
+                  setFormData(prev => ({ ...prev, email: '' }));
+                }}
               >
-                <option value="developer">Developer</option>
-                <option value="tester">Tester</option>
-                <option value="manager">Manager</option>
-                <option value="admin">Admin</option>
-              </select>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to login
+              </Button>
             </div>
-            {!isLogin && (
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name *</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter your full name"
+                    className="w-full"
+                  />
+                </div>
+              )}
+              
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                <Label htmlFor="email">Email Address *</Label>
                 <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
+                  id="email"
+                  name="email"
+                  type="email"
                   required
-                  value={formData.confirmPassword}
+                  value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Confirm your password"
+                  placeholder="Enter your email"
                   className="w-full"
                 />
               </div>
-            )}
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading}
-            >
-              {isLoading 
-                ? (isLogin ? 'Signing In...' : 'Creating Account...') 
-                : (isLogin ? 'Sign In' : 'Create Account')
-              }
-            </Button>
-          </form>
+              
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Create a password (min 6 chars)"
+                    className="w-full"
+                  />
+                </div>
+              )}
+
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role *</Label>
+                  <select
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    required
+                  >
+                    <option value="developer">Developer</option>
+                    <option value="tester">Tester</option>
+                    <option value="manager">Manager</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+              )}
+              
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    placeholder="Confirm your password"
+                    className="w-full"
+                  />
+                </div>
+              )}
+              
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading}
+              >
+                {isLoading 
+                  ? (isLogin ? 'Sending Magic Link...' : 'Creating Account...') 
+                  : (isLogin ? 'Send Magic Link' : 'Create Account')
+                }
+              </Button>
+            </form>
+          )}
           
           <div className="mt-6 text-center">
             <button
@@ -314,10 +319,13 @@ export const AuthModal = ({ onLogin, onClose, initialMode = 'login' }: AuthModal
             </button>
           </div>
 
-          {isLogin && users.length > 0 && (
+          {!isOtpMode && (
             <div className="mt-4 p-3 bg-blue-50 rounded-lg">
               <p className="text-xs text-blue-700 text-center">
-                💡 Demo: You can create a new account or use any previously registered email
+                {isLogin 
+                  ? "💡 Enter your email to receive a magic link for secure login"
+                  : "💡 Create an account with email verification for security"
+                }
               </p>
             </div>
           )}
